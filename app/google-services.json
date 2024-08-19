@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "1014044278297",
+    "firebase_url": "https://atv1-417813-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "atv1-417813",
+    "storage_bucket": "atv1-417813.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1014044278297:android:de2d59419a961b1d5ab488",
+        "android_client_info": {
+          "package_name": "com.example.atv1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAeu_gYc63fIrFEKY2d8-zQAeQKmsc8YA8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1014044278297:android:c79e5e79c4c83fd05ab488",
+        "android_client_info": {
+          "package_name": "com.example.atvavancada"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAeu_gYc63fIrFEKY2d8-zQAeQKmsc8YA8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
