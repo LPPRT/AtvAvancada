@@ -73,7 +73,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         buttonRota1.setOnClickListener(v -> desenharRota(rota1, "Rota 1"));
         buttonRota2.setOnClickListener(v -> desenharRota(rota2, "Rota 2"));
         buttonRota3.setOnClickListener(v -> desenharRota(rota3, "Rota 3"));
+
+
+
+
     }
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -96,7 +101,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         new Thread(() -> {
             try {
-                double totalDistancia = 0.0;
+                List<Double> distanciasEntreMedidores = new ArrayList<>();
 
                 for (int i = 0; i < medidores.length - 1; i++) {
                     LatLng origem = medidores[i];
@@ -111,7 +116,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (result.routes != null && result.routes.length > 0) {
                         DirectionsRoute route = result.routes[0];
                         double distancia = route.legs[0].distance.inMeters / 1000.0; // Distância em quilômetros
-                        totalDistancia += distancia;
+                        distanciasEntreMedidores.add(distancia);
 
                         runOnUiThread(() -> {
                             PolylineOptions polylineOptions = new PolylineOptions();
@@ -126,19 +131,55 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 }
 
-                // Calcular e exibir tempos para diferentes velocidades
-                StringBuilder resultadoFinal = new StringBuilder("Dados da " + nomeRota + ":\n");
-                for (int velocidade = 5; velocidade <= 50; velocidade += 5) {
-                    double tempoDeslocamento = (totalDistancia / velocidade) * 60.0; // Tempo em minutos
-                    String mensagem = String.format(
-                            "Velocidade: %d km/h, Tempo de deslocamento: %.2f minutos",
-                            velocidade, tempoDeslocamento
-                    );
-                    resultadoFinal.append(mensagem).append("\n");
+                // Simulação de 10 passagens e Reconciliação de Dados
+                List<List<Double>> leiturasTempo = new ArrayList<>();
+                double[] desvioPadrao = new double[10];
+                double[][] matrizIncidencia = new double[10][medidores.length - 1];
+
+                for (int i = 0; i < 10; i++) {
+                    List<Double> leituras = new ArrayList<>();
+                    for (double distancia : distanciasEntreMedidores) {
+                        double tempoDeslocamento = (distancia / (5 + (i * 5))) * 60.0; // Tempo de deslocamento por trecho
+                        leituras.add(tempoDeslocamento);
+                    }
+                    leiturasTempo.add(leituras);
+                    desvioPadrao[i] = 0.1 * leituras.stream().mapToDouble(Double::doubleValue).sum(); // Assumindo um desvio padrão arbitrário
+                    // Preencher a matriz de incidência com valores arbitrários para o exemplo
+                    for (int j = 0; j < medidores.length - 1; j++) {
+                        matrizIncidencia[i][j] = (i % 2 == 0) ? 1 : -1;
+                    }
                 }
 
-                // Mostrar o resultado final uma única vez
-                System.out.println(resultadoFinal.toString());
+                Reconciliation reconciliation = new Reconciliation(
+                        leiturasTempo.stream().flatMap(List::stream).mapToDouble(Double::doubleValue).toArray(),
+                        desvioPadrao,
+                        matrizIncidencia
+                );
+                double[] valoresReconciliados = reconciliation.getReconciledFlow();
+
+                // Exibir os tempos de deslocamento e leituras de tempo convertidas, incluindo a velocidade
+                StringBuilder resultadoFinal = new StringBuilder("Dados da " + nomeRota + ":\n");
+                for (int i = 0; i < 10; i++) {
+                    int velocidade = 5 + (i * 5); // Velocidade atual para o teste
+                    resultadoFinal.append(String.format("Teste %d (Velocidade: %d km/h):\n", i + 1, velocidade));
+                    for (int j = 0; j < distanciasEntreMedidores.size(); j++) {
+                        double tempoDeslocamento = leiturasTempo.get(i).get(j);
+                        resultadoFinal.append(String.format(
+                                "Trecho %d: Tempo de deslocamento: %.2f \n",
+                                j + 1, tempoDeslocamento
+                        ));
+                    }
+
+                    // Exibir leituras de tempo no final do teste
+                    resultadoFinal.append("Leituras de Tempo para este teste:\n");
+                    for (double leituraTempo : leiturasTempo.get(i)) {
+                        resultadoFinal.append(String.format("%.2f minutos\n", leituraTempo));
+                    }
+                    resultadoFinal.append("\n");
+                }
+
+                // Mostrar o resultado final uma única vez no log
+                Log.i("MapsActivity", resultadoFinal.toString());
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -146,5 +187,4 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }).start();
     }
 
-    
 }
